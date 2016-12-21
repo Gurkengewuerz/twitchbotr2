@@ -1,6 +1,9 @@
 package de.gurkengewuerz.twitchbotr2;
 
+import de.gurkengewuerz.twitchbotr2.database.DB;
 import de.gurkengewuerz.twitchbotr2.gui.DashboardGUI;
+import de.gurkengewuerz.twitchbotr2.listener.MessageListener;
+import de.lukweb.twitchchat.TwitchChat;
 
 import javax.swing.*;
 import java.util.logging.Level;
@@ -11,14 +14,118 @@ import java.util.logging.Logger;
  */
 public class TwitchBotR2 {
 
+    private static TwitchChat twitchStreamerChat;
+    private static TwitchChat twitchBotChat;
+    private static DashboardGUI dashboardInstance;
+
     public static void main(String[] args) {
+        startRun();
         try {
             UIManager.setLookAndFeel("com.jtattoo.plaf.hifi.HiFiLookAndFeel");
             // UIManager.setLookAndFeel("com.bulenkov.darcula.DarculaLaf");
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             Logger.getLogger(TwitchBotR2.class.getName()).log(Level.SEVERE, null, e);
         }
-        new DashboardGUI();
+        dashboardInstance = new DashboardGUI();
     }
 
+    private static void startRun() {
+        DB.get("main").queryUpdate(
+                "CREATE TABLE IF NOT EXISTS `user` (" +
+                        " `username` TEXT NOT NULL, " +
+                        " `rank` INTEGER, " +
+                        " `first_visit` INTEGER, " +
+                        " `last_visit` INTEGER, " +
+                        " PRIMARY KEY(username)" +
+                        ")"
+        );
+
+        DB.get("main").queryUpdate(
+                "CREATE TABLE IF NOT EXISTS `config` (" +
+                        " `configname` TEXT NOT NULL," +
+                        " `value` TEXT," +
+                        " `description` TEXT, " +
+                        " PRIMARY KEY(configname)" +
+                        ");"
+        );
+
+        DB.get("main").queryUpdate(
+                "CREATE TABLE IF NOT EXISTS `log` (" +
+                        " `log_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                        " `timestamp` INTEGER NOT NULL, " +
+                        " `text` TEXT NOT NULL, " +
+                        " `executer` TEXT NOT NULL" +
+                        ");"
+        );
+
+        DB.get("main").queryUpdate(
+                "CREATE TABLE IF NOT EXISTS `coin` (" +
+                        " `useranme`\tTEXT NOT NULL," +
+                        " `coin`\tINTEGER," +
+                        " PRIMARY KEY(useranme)" +
+                        ");"
+        );
+
+        DB.get("main").queryUpdate(
+                "CREATE TABLE IF NOT EXISTS `command` (" +
+                        " `command_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, " +
+                        " `command` TEXT NOT NULL, " +
+                        " `activated` INTEGER NOT NULL DEFAULT 0, " +
+                        " `response` TEXT NOT NULL" +
+                        ");"
+        );
+
+        DB.get("main").queryUpdate(
+                "CREATE TABLE IF NOT EXISTS `timer` (" +
+                        " `timer_id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                        " `name` TEXT NOT NULL, " +
+                        " `response` TEXT NOT NULL, " +
+                        " `last_time` INTEGER, " +
+                        " `interval` INTEGER, " +
+                        " `activated` INTEGER NOT NULL DEFAULT 0" +
+                        ");"
+        );
+
+        startChat();
+        joinChat();
+    }
+
+    public static DashboardGUI getDashboardInstance() {
+        return dashboardInstance;
+    }
+
+    public static void startChat() {
+        if (Config.TWITCH_BOT_NAME.getEntry().toStr() != null && !Config.TWITCH_BOT_NAME.getEntry().toStr().isEmpty()) {
+            if (Config.TWITCH_BOT_OAUTH.getEntry().toStr() != null && !Config.TWITCH_BOT_OAUTH.getEntry().toStr().isEmpty()) {
+                twitchBotChat = new TwitchChat(Config.TWITCH_BOT_NAME.getEntry().toStr(), Config.TWITCH_BOT_OAUTH.getEntry().toStr());
+            }
+        }
+
+        if (Config.TWITCH_STREAMER_NAME.getEntry().toStr() != null && !Config.TWITCH_STREAMER_NAME.getEntry().toStr().isEmpty()) {
+            if (Config.TWITCH_STREAMER_OAUTH.getEntry().toStr() != null && !Config.TWITCH_STREAMER_OAUTH.getEntry().toStr().isEmpty()) {
+                twitchStreamerChat = new TwitchChat(Config.TWITCH_STREAMER_NAME.getEntry().toStr(), Config.TWITCH_STREAMER_OAUTH.getEntry().toStr());
+            }
+        }
+
+        if(twitchStreamerChat != null){
+            twitchStreamerChat.getEventManager().register(new MessageListener());
+        } else if (twitchBotChat != null){
+            twitchBotChat.getEventManager().register(new MessageListener());
+        }
+    }
+
+    public static void joinChat(){
+        if (Config.TWITCH_CHANNEL.getEntry().toStr() != null && !Config.TWITCH_CHANNEL.getEntry().toStr().isEmpty()) {
+            if (twitchBotChat != null) twitchBotChat.getChannel(Config.TWITCH_CHANNEL.getEntry().toStr());
+            if (twitchStreamerChat != null) twitchStreamerChat.getChannel(Config.TWITCH_CHANNEL.getEntry().toStr());
+        }
+    }
+
+    public static TwitchChat getTwitchStreamerChat() {
+        return twitchStreamerChat;
+    }
+
+    public static TwitchChat getTwitchBotChat() {
+        return twitchBotChat;
+    }
 }

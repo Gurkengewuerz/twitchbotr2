@@ -75,7 +75,4 @@ public class ConfigEntry {
     public Object setDefault() {
         return set(defaults);
     }
-
-
-    // TODO: Constructor -> Insert if not exists; On Update -> Update
 }

@@ -54,7 +54,15 @@
         <dependency>
             <groupId>com.github.lukweb-de</groupId>
             <artifactId>TwitchChat</artifactId>
-            <version>670281fa55</version>
+            <version>3e82d8df8f</version>
+        </dependency>
+        <dependency>
+            <!--https://github.com/urgrue/Java-Twitch-Api-Wrapper-->
+            <groupId>mb3364</groupId>
+            <artifactId>com.mb3364</artifactId>
+            <version>0.3</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/local-maven-repo/twitch-api-wrapper-0.3.jar</systemPath>
         </dependency>
     </dependencies>
 

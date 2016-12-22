@@ -35,9 +35,7 @@ public class Error {
     public void show() {
         EventQueue.invokeLater(() -> {
             int returnInt = JOptionPane.showConfirmDialog(null, message, "An Error occurred", JOptionPane.YES_NO_OPTION);
-            if (callback != null){
-                callback.callback(returnInt);
-            }
+            if (callback != null && returnInt == 0) callback.callback(true);
         });
     }
 

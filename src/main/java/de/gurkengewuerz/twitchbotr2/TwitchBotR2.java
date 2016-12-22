@@ -1,11 +1,16 @@
 package de.gurkengewuerz.twitchbotr2;
 
+import com.mb3364.twitch.api.Twitch;
 import de.gurkengewuerz.twitchbotr2.database.DB;
 import de.gurkengewuerz.twitchbotr2.gui.DashboardGUI;
 import de.gurkengewuerz.twitchbotr2.listener.MessageListener;
+import de.gurkengewuerz.twitchbotr2.object.ViewerList;
+import de.lukweb.twitchchat.TwitchChannel;
 import de.lukweb.twitchchat.TwitchChat;
 
 import javax.swing.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,7 +21,10 @@ public class TwitchBotR2 {
 
     private static TwitchChat twitchStreamerChat;
     private static TwitchChat twitchBotChat;
+    private static Twitch twitchAPI;
     private static DashboardGUI dashboardInstance;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private static ViewerList viewerList = new ViewerList();
 
     public static void main(String[] args) {
         startRun();
@@ -87,7 +95,6 @@ public class TwitchBotR2 {
         );
 
         startChat();
-        joinChat();
     }
 
     public static DashboardGUI getDashboardInstance() {
@@ -97,13 +104,16 @@ public class TwitchBotR2 {
     public static void startChat() {
         if (Config.TWITCH_BOT_NAME.getEntry().toStr() != null && !Config.TWITCH_BOT_NAME.getEntry().toStr().isEmpty()) {
             if (Config.TWITCH_BOT_OAUTH.getEntry().toStr() != null && !Config.TWITCH_BOT_OAUTH.getEntry().toStr().isEmpty()) {
-                twitchBotChat = new TwitchChat(Config.TWITCH_BOT_NAME.getEntry().toStr(), Config.TWITCH_BOT_OAUTH.getEntry().toStr());
+                twitchBotChat = TwitchChat.build(Config.TWITCH_BOT_NAME.getEntry().toStr(), Config.TWITCH_BOT_OAUTH.getEntry().toStr());
             }
         }
 
         if (Config.TWITCH_STREAMER_NAME.getEntry().toStr() != null && !Config.TWITCH_STREAMER_NAME.getEntry().toStr().isEmpty()) {
             if (Config.TWITCH_STREAMER_OAUTH.getEntry().toStr() != null && !Config.TWITCH_STREAMER_OAUTH.getEntry().toStr().isEmpty()) {
-                twitchStreamerChat = new TwitchChat(Config.TWITCH_STREAMER_NAME.getEntry().toStr(), Config.TWITCH_STREAMER_OAUTH.getEntry().toStr());
+                twitchStreamerChat = TwitchChat.build(Config.TWITCH_STREAMER_NAME.getEntry().toStr(), Config.TWITCH_STREAMER_OAUTH.getEntry().toStr());
+                twitchAPI = new Twitch();
+                twitchAPI.setClientId("kplkvvjb4po9vff54xz6bvhc29dipbo");
+                twitchAPI.auth().setAccessToken(Config.TWITCH_STREAMER_OAUTH.getEntry().toStr().replace("oauth:", ""));
             }
         }
 
@@ -114,18 +124,31 @@ public class TwitchBotR2 {
         }
     }
 
-    public static void joinChat(){
-        if (Config.TWITCH_CHANNEL.getEntry().toStr() != null && !Config.TWITCH_CHANNEL.getEntry().toStr().isEmpty()) {
-            if (twitchBotChat != null) twitchBotChat.getChannel(Config.TWITCH_CHANNEL.getEntry().toStr());
-            if (twitchStreamerChat != null) twitchStreamerChat.getChannel(Config.TWITCH_CHANNEL.getEntry().toStr());
-        }
+    public static Twitch getTwitchAPI(){
+        return twitchAPI;
     }
 
     public static TwitchChat getTwitchStreamerChat() {
         return twitchStreamerChat;
     }
 
+    public static TwitchChannel getTwitchStreamerChannel() {
+        return twitchStreamerChat.getChannel(Config.TWITCH_CHANNEL.getEntry().toStr());
+    }
+
     public static TwitchChat getTwitchBotChat() {
         return twitchBotChat;
+    }
+
+    public static TwitchChannel getTwitchBotChannel() {
+        return twitchBotChat.getChannel(Config.TWITCH_CHANNEL.getEntry().toStr());
+    }
+
+    public static ViewerList getViewerList() {
+        return viewerList;
+    }
+
+    public ScheduledExecutorService getScheduler() {
+        return scheduler;
     }
 }

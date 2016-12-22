@@ -1,6 +1,5 @@
 package de.gurkengewuerz.twitchbotr2.listener;
 
-import de.gurkengewuerz.twitchbotr2.TwitchBotR2;
 import de.lukweb.twitchchat.events.Handler;
 import de.lukweb.twitchchat.events.Listener;
 import de.lukweb.twitchchat.events.irc.IrcReceiveMessageEvent;

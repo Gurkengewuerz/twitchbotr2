@@ -2,13 +2,17 @@ package de.gurkengewuerz.twitchbotr2.gui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import de.gurkengewuerz.twitchbotr2.Error;
 import de.gurkengewuerz.twitchbotr2.api.callback.TwitchBotCallback;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by gurkengewuerz.de on 21.12.2016.
@@ -37,6 +41,14 @@ public class LoginGUI {
             frame.dispose();
         });
         abortButton.addActionListener(e -> frame.dispose());
+        generateOAuthKeyButton.addActionListener(e -> {
+            if (Desktop.isDesktopSupported()) try {
+                Desktop.getDesktop().browse(new URI("https://s.gurkengewuerz.de/tools/twitch/"));
+            } catch (IOException | URISyntaxException ex) {
+                Logger.getLogger(LoginGUI.class.getName()).log(Level.SEVERE, null, ex);
+                new Error(ex).show();
+            }
+        });
     }
 
     {

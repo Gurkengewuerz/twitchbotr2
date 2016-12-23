@@ -2,11 +2,13 @@ package de.gurkengewuerz.twitchbotr2.object;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by gurkengewuerz.de on 22.12.2016.
  */
-public class ViewerList<Viewer> {
+public class ViewerList {
+
     private ArrayList<Viewer> elementData;
     private int size = 0;
 
@@ -23,10 +25,8 @@ public class ViewerList<Viewer> {
     }
 
     public Viewer get(String name) {
-        for(Viewer v : elementData){
-            // TODO: If viewer equals
-        }
-        return null;
+        Optional<Viewer> first = elementData.stream().filter(viewer -> viewer.getName().equalsIgnoreCase(name)).findFirst();
+        return first.orElse(null);
     }
 
     public Viewer remove(int index) {

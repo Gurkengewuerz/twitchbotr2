@@ -1,6 +1,7 @@
 package de.gurkengewuerz.twitchbotr2;
 
 import com.mb3364.twitch.api.Twitch;
+import de.gurkengewuerz.twitchbotr2.api.timer.ViewerRefreshTask;
 import de.gurkengewuerz.twitchbotr2.database.DB;
 import de.gurkengewuerz.twitchbotr2.gui.DashboardGUI;
 import de.gurkengewuerz.twitchbotr2.listener.MessageListener;
@@ -11,6 +12,7 @@ import de.lukweb.twitchchat.TwitchChat;
 import javax.swing.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +25,7 @@ public class TwitchBotR2 {
     private static TwitchChat twitchBotChat;
     private static Twitch twitchAPI;
     private static DashboardGUI dashboardInstance;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
     private static ViewerList viewerList = new ViewerList();
 
     public static void main(String[] args) {
@@ -42,6 +44,7 @@ public class TwitchBotR2 {
                 "CREATE TABLE IF NOT EXISTS `user` (" +
                         " `username` TEXT NOT NULL, " +
                         " `rank` INTEGER, " +
+                        " `watch_time` INTEGER, " +
                         " `first_visit` INTEGER, " +
                         " `last_visit` INTEGER, " +
                         " PRIMARY KEY(username)" +
@@ -68,7 +71,7 @@ public class TwitchBotR2 {
 
         DB.get("main").queryUpdate(
                 "CREATE TABLE IF NOT EXISTS `coin` (" +
-                        " `useranme`\tTEXT NOT NULL," +
+                        " `username`\tTEXT NOT NULL," +
                         " `coin`\tINTEGER," +
                         " PRIMARY KEY(useranme)" +
                         ");"
@@ -95,6 +98,8 @@ public class TwitchBotR2 {
         );
 
         startChat();
+        new ViewerRefreshTask().run();
+        getScheduler().schedule(new ViewerRefreshTask(), 60, TimeUnit.SECONDS);
     }
 
     public static DashboardGUI getDashboardInstance() {
@@ -105,26 +110,28 @@ public class TwitchBotR2 {
         if (Config.TWITCH_BOT_NAME.getEntry().toStr() != null && !Config.TWITCH_BOT_NAME.getEntry().toStr().isEmpty()) {
             if (Config.TWITCH_BOT_OAUTH.getEntry().toStr() != null && !Config.TWITCH_BOT_OAUTH.getEntry().toStr().isEmpty()) {
                 twitchBotChat = TwitchChat.build(Config.TWITCH_BOT_NAME.getEntry().toStr(), Config.TWITCH_BOT_OAUTH.getEntry().toStr());
+                twitchBotChat.connect();
             }
         }
 
         if (Config.TWITCH_STREAMER_NAME.getEntry().toStr() != null && !Config.TWITCH_STREAMER_NAME.getEntry().toStr().isEmpty()) {
             if (Config.TWITCH_STREAMER_OAUTH.getEntry().toStr() != null && !Config.TWITCH_STREAMER_OAUTH.getEntry().toStr().isEmpty()) {
                 twitchStreamerChat = TwitchChat.build(Config.TWITCH_STREAMER_NAME.getEntry().toStr(), Config.TWITCH_STREAMER_OAUTH.getEntry().toStr());
+                twitchStreamerChat.connect();
                 twitchAPI = new Twitch();
                 twitchAPI.setClientId("kplkvvjb4po9vff54xz6bvhc29dipbo");
                 twitchAPI.auth().setAccessToken(Config.TWITCH_STREAMER_OAUTH.getEntry().toStr().replace("oauth:", ""));
             }
         }
 
-        if(twitchStreamerChat != null){
+        if (twitchStreamerChat != null) {
             twitchStreamerChat.getEventManager().register(new MessageListener());
-        } else if (twitchBotChat != null){
+        } else if (twitchBotChat != null) {
             twitchBotChat.getEventManager().register(new MessageListener());
         }
     }
 
-    public static Twitch getTwitchAPI(){
+    public static Twitch getTwitchAPI() {
         return twitchAPI;
     }
 
@@ -148,7 +155,11 @@ public class TwitchBotR2 {
         return viewerList;
     }
 
-    public ScheduledExecutorService getScheduler() {
+    public static void setViewerList(ViewerList list) {
+        viewerList = list;
+    }
+
+    public static ScheduledExecutorService getScheduler() {
         return scheduler;
     }
 }

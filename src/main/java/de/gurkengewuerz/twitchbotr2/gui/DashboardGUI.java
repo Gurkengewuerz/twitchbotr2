@@ -69,6 +69,10 @@ public class DashboardGUI {
     private JTextPane botLoginCurrent;
     private JTextPane streamerLoginCurrent;
     private JPanel commercialPane;
+    private JTable userDatabaseList;
+    private JButton saveButton;
+    private JButton loadButton;
+    private JCheckBox onlyViewerListCheckBox;
     private long lastKeyPressed;
 
     public DashboardGUI() {
@@ -219,6 +223,10 @@ public class DashboardGUI {
                     numThread.start();
                 }
             }
+        });
+
+        userDatabaseList.getModel().addTableModelListener(e -> {
+            // TODO: Save Viewer in Database
         });
     }
 
@@ -490,8 +498,18 @@ public class DashboardGUI {
         final Spacer spacer7 = new Spacer();
         panel2.add(spacer7, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         userDatabasePane = new JPanel();
-        userDatabasePane.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        userDatabasePane.setLayout(new GridLayoutManager(5, 2, new Insets(0, 0, 0, 0), -1, -1));
         paneSites.addTab("User Database", userDatabasePane);
+        userDatabaseList = new JTable();
+        userDatabasePane.add(userDatabaseList, new GridConstraints(1, 0, 4, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(150, 50), null, 0, false));
+        saveButton = new JButton();
+        saveButton.setIcon(new ImageIcon(getClass().getResource("/add_16x16.png")));
+        saveButton.setText("Save");
+        userDatabasePane.add(saveButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        loadButton = new JButton();
+        loadButton.setIcon(new ImageIcon(getClass().getResource("/refresh_16x16.png")));
+        loadButton.setText("Load");
+        userDatabasePane.add(loadButton, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         commandsPane = new JPanel();
         commandsPane.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         paneSites.addTab("Commands", commandsPane);
